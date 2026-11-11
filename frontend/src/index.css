@@ -1,1 +1,42 @@
 @import "tailwindcss";
+
+/* Tokens de diseño: paleta «mint-pink-accounts», tipografía Manrope + JetBrains Mono y radio «soft»
+   (repartidos con el `start.mjs` de la skill de diseño). Todo el color y la forma salen de aquí. */
+@theme {
+  --color-bg: #f8f8f8;
+  --color-surface: #eeeeee;
+  --color-card: #ffffff;
+  --color-line: #dedede;
+  --color-ink: #0a0a0a;
+  --color-muted: #6a6a6a;
+  --color-accent: #1f6b3a;
+  --color-accent-ink: #ffffff;
+
+  --font-sans: "Manrope", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+}
+
+@layer base {
+  html {
+    background: var(--color-bg);
+    color: var(--color-ink);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    ::before,
+    ::after {
+      transition-duration: 0s !important;
+      animation-duration: 0s !important;
+    }
+  }
+}

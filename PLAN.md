@@ -74,6 +74,23 @@ El agente trabaja una fase cada vez y marca las casillas al cerrarla.
 
 **Hecho cuando:** el dashboard muestra la lista y las estadísticas, y todo pasa.
 
+## Fase 3b · Rediseño visual
+
+**Objetivo:** dar a la interfaz un diseño propio y coherente antes de añadir el mapa.
+
+**Tareas:**
+- [x] Tokens de color, tipografía y radio en `index.css` (`@theme`): paleta «mint-pink-accounts», Manrope + JetBrains Mono y radio «soft», repartidos con la skill `design-taste-frontend`.
+- [x] Fuentes por enlace de Google Fonts en `index.html`; `lang="es"`, título y descripción corregidos.
+- [x] Rediseño de cabecera, estadísticas, controles, tarjetas y mensajes de estado, sin cambiar comportamiento ni textos.
+- [x] Interacción: foco visible, pulsación, objetivos táctiles de 44 px y `prefers-reduced-motion`.
+- [x] Revisión a 390, 768 y 1440 px.
+
+**Pruebas:**
+- Playwright (`e2e/diseno.spec.ts`): sin scroll horizontal a 390/768/1440 px, controles de al menos 44 px, anillo de foco de 2 px, transiciones que se apagan con movimiento reducido y tipografía aplicada.
+- Las pruebas de las fases anteriores pasan sin modificarse. Fixture compartida que aborta las peticiones a Google Fonts.
+
+**Hecho cuando:** todo pasa, las capturas reales a 390, 768 y 1440 px se ven bien y `perf.mjs` pasa sobre el build.
+
 ## Fase 4 · Mapa interactivo
 
 **Objetivo:** ver los sismos en un mapa mundial.

@@ -1,6 +1,6 @@
 export function LoadingMessage({ children }: { children: string }) {
   return (
-    <p role="status" className="py-8 text-center text-slate-400">
+    <p role="status" className="py-8 text-center text-muted">
       {children}
     </p>
   )
@@ -8,12 +8,12 @@ export function LoadingMessage({ children }: { children: string }) {
 
 export function ErrorMessage({ children, onRetry }: { children: string; onRetry: () => void }) {
   return (
-    <div role="alert" className="rounded-lg border border-red-500/40 bg-red-950/40 p-4 text-center">
-      <p className="text-red-200">{children}</p>
+    <div role="alert" className="rounded-md border border-red-200 bg-red-50 p-4 text-center">
+      <p className="text-red-900">{children}</p>
       <button
         type="button"
         onClick={onRetry}
-        className="mt-3 rounded-md bg-red-500 px-4 py-1.5 text-sm font-medium text-white hover:bg-red-400"
+        className="mt-3 min-h-11 rounded-sm bg-red-700 px-5 text-sm font-medium text-white transition-colors hover:bg-red-800 active:translate-y-px active:scale-[.985]"
       >
         Reintentar
       </button>
@@ -23,12 +23,15 @@ export function ErrorMessage({ children, onRetry }: { children: string; onRetry:
 
 export function WarningBanner({ children }: { children: string }) {
   return (
-    <p role="alert" className="mb-4 rounded-lg border border-amber-500/40 bg-amber-950/40 p-3 text-sm text-amber-200">
+    <p
+      role="alert"
+      className="mb-4 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900"
+    >
       {children}
     </p>
   )
 }
 
 export function EmptyMessage({ children }: { children: string }) {
-  return <p className="py-8 text-center text-slate-400">{children}</p>
+  return <p className="py-8 text-center text-muted">{children}</p>
 }

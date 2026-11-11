@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test'
+import { expect, test } from './fixtures'
 
 test('la app se abre y muestra su nombre', async ({ page }) => {
   // La pantalla pide sismos y estadísticas: se simulan para no tocar USGS ni la base de datos.

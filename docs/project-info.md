@@ -48,6 +48,7 @@ Curiosos de la geología, estudiantes e investigadores que quieren seguir los te
 - **API de sismos:** `GET /api/earthquakes?window=hour|day|week&sort=recent|magnitude|depth|significance&limit=500` (por defecto `day`, `recent`, 500; máximo 2000). Responde `{earthquakes, stale, warning}`: si USGS no responde, sirve lo ya guardado con `stale: true` y un aviso. Al consultar se ingiere el feed de la ventana, salvo que se haya consultado en los últimos 90 s.
 - **API de estadísticas:** `GET /api/stats` → `{total_24h, max_magnitude, most_active_region: {name, count} | null, stale, warning}`. Refresca la ventana de 24 h con la misma caché de 90 s. La zona activa es lo que va tras la última coma del `place` (sin el prefijo «N km DIR of»); sin coma, el lugar entero.
 - **Frontend (`frontend/src/`):** `api/` (cliente y tipos), `hooks/` (`useAsync` con cancelación, `useEarthquakes`, `useStats`), `components/` (barra de estadísticas, controles, lista y tarjetas, mensajes de estado), `format.ts` (formato en español) y `labels.ts`. Sin librerías de datos: `fetch` y hooks propios.
+- **Diseño (frontend):** todos los colores, fuentes y radios salen de los tokens `@theme` de `frontend/src/index.css` (paleta verde sobre fondo claro, Manrope para texto y JetBrains Mono para cifras, radios de 8/12/20 px). Las fuentes se cargan de Google Fonts con un `<link>` en `index.html`; sin red, se usa la tipografía del sistema. Reglas: foco visible de 2 px, controles de al menos 44 px, `prefers-reduced-motion` respetado y nada que aparezca al hacer scroll. La skill de diseño (`.claude/skills/design-taste-frontend/`, de terceros, fuera de git) se usó solo para repartir paleta y tipografía; su flujo de landing y su hook `Stop` no se usan.
 - **Estructura prevista:** `frontend/` y `backend/` separados. La lógica de negocio (ingesta, clasificación, caché de informes) va fuera de los endpoints y de los componentes.
 - **Cómo se arranca:**
   1. `cp .env.example .env` y rellenar los valores (`POSTGRES_*`; el puerto del host por defecto es 5433). `DATABASE_URL` tiene la forma `postgresql+psycopg://USUARIO:CLAVE@localhost:5433/BASE`; `TEST_DATABASE_URL` apunta a otra base (p. ej. `BASE_test`), que las pruebas crean solas. El backend lee `.env` de la raíz.
@@ -59,7 +60,7 @@ Curiosos de la geología, estudiantes e investigadores que quieren seguir los te
 - **Cómo se ejecutan las pruebas:**
   - Backend: `cd backend && .venv/bin/pytest` y `.venv/bin/ruff check .` (requiere Postgres levantado; usa `TEST_DATABASE_URL` y se niega a correr si es igual a `DATABASE_URL`).
   - Frontend: `cd frontend && npm test` y `npm run lint`
-  - E2E (la API se simula en el navegador, sin USGS ni base de datos): `cd e2e && npm install && npx playwright install chromium` la primera vez; después `npm test` (arranca backend y frontend solos).
+  - E2E (la API se simula en el navegador y las fuentes de Google se abortan: sin USGS, base de datos ni red): `cd e2e && npm install && npx playwright install chromium` la primera vez; después `npm test` (arranca backend y frontend solos).
 
 ## Datos y claves
 
