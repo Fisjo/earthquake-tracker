@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest'
-import { formatDepth, formatMagnitude, formatRelativeTime } from './format'
+import { formatDateTime, formatDepth, formatMagnitude, formatRelativeTime } from './format'
 
 describe('formatMagnitude', () => {
   test('una cifra decimal', () => {
@@ -46,5 +46,14 @@ describe('formatRelativeTime', () => {
   })
   test('una fecha futura (reloj desajustado) no da valores negativos', () => {
     expect(at('2026-01-01T12:05:00Z')).toBe('hace unos segundos')
+  })
+})
+
+describe('formatDateTime', () => {
+  test('fecha y hora en UTC, con la zona indicada', () => {
+    expect(formatDateTime('2026-01-01T11:55:00Z')).toMatch(/1 ene 2026.*11:55 UTC$/)
+  })
+  test('no depende de la zona horaria del navegador', () => {
+    expect(formatDateTime('2026-07-01T23:30:00Z')).toMatch(/1 jul 2026.*23:30 UTC$/)
   })
 })

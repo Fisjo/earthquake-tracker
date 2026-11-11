@@ -1,8 +1,26 @@
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
-import { expect, test } from 'vitest'
+import { expect, test, vi } from 'vitest'
 import App from './App'
 import { earthquake, listBody, requestedUrls, statsBody, stubApi } from './test-utils'
 import type { Reply } from './test-utils'
+import type { Earthquake } from './api/types'
+
+// Leaflet no funciona bien en jsdom: el mapa se sustituye por un doble con un botón por marcador.
+vi.mock('./components/EarthquakeMap', () => ({
+  default: (props: {
+    earthquakes: Earthquake[]
+    selectedId: string | null
+    onSelect: (id: string | null) => void
+  }) => (
+    <div data-testid="mapa" data-selected={props.selectedId ?? ''}>
+      {props.earthquakes.map((e) => (
+        <button key={e.usgs_id} type="button" onClick={() => props.onSelect(e.usgs_id)}>
+          {`marcador ${e.usgs_id}`}
+        </button>
+      ))}
+    </div>
+  ),
+}))
 
 const alfa = earthquake({ usgs_id: 'alfa', place: 'Sismo Alfa', magnitude: 3.1 })
 const beta = earthquake({ usgs_id: 'beta', place: 'Sismo Beta', magnitude: 6.0 })
@@ -91,4 +109,69 @@ test('una respuesta lenta de una ventana anterior no pisa a la actual', async ()
   await new Promise((r) => setTimeout(r, 20))
   expect(screen.getByText('Sismo Beta')).toBeInTheDocument()
   expect(screen.queryByText('Sismo Alfa')).not.toBeInTheDocument()
+})
+
+const tarjeta = (lugar: string) => screen.getByText(lugar).closest('button') as HTMLElement
+const marcadores = () => screen.getAllByRole('button', { name: /^marcador / })
+
+test('el mapa recibe los mismos sismos que la lista', async () => {
+  api(() => ({ body: listBody([alfa, beta]) }))
+  render(<App />)
+  await screen.findByText('Sismo Alfa')
+  await waitFor(() => expect(marcadores()).toHaveLength(2))
+  expect(screen.getAllByRole('listitem')).toHaveLength(2)
+})
+
+test('pulsar un marcador selecciona su tarjeta', async () => {
+  api(() => ({ body: listBody([alfa, beta]) }))
+  render(<App />)
+  await screen.findByText('Sismo Alfa')
+  fireEvent.click(screen.getByRole('button', { name: 'marcador beta' }))
+  expect(tarjeta('Sismo Beta')).toHaveAttribute('aria-current', 'true')
+  expect(tarjeta('Sismo Alfa')).not.toHaveAttribute('aria-current')
+})
+
+test('pulsar una tarjeta pasa la selección al mapa', async () => {
+  api(() => ({ body: listBody([alfa, beta]) }))
+  render(<App />)
+  await screen.findByText('Sismo Alfa')
+  expect(screen.getByTestId('mapa')).toHaveAttribute('data-selected', '')
+  fireEvent.click(tarjeta('Sismo Alfa'))
+  expect(screen.getByTestId('mapa')).toHaveAttribute('data-selected', 'alfa')
+})
+
+test('cambiar de ventana limpia la selección', async () => {
+  api(() => ({ body: listBody([alfa, beta]) }))
+  render(<App />)
+  await screen.findByText('Sismo Alfa')
+  fireEvent.click(tarjeta('Sismo Alfa'))
+  expect(screen.getByTestId('mapa')).toHaveAttribute('data-selected', 'alfa')
+  fireEvent.click(screen.getByRole('button', { name: 'Última hora' }))
+  await screen.findByText('Sismo Alfa')
+  expect(screen.getByTestId('mapa')).toHaveAttribute('data-selected', '')
+})
+
+test('cambiar el orden conserva la selección', async () => {
+  api((url) => ({
+    body: listBody(url.searchParams.get('sort') === 'magnitude' ? [beta, alfa] : [alfa, beta]),
+  }))
+  render(<App />)
+  await screen.findByText('Sismo Alfa')
+  fireEvent.click(tarjeta('Sismo Alfa'))
+  fireEvent.change(screen.getByLabelText('Ordenar por'), { target: { value: 'magnitude' } })
+  await waitFor(() => expect(lugares()).toEqual(['Sismo Beta', 'Sismo Alfa']))
+  expect(screen.getByTestId('mapa')).toHaveAttribute('data-selected', 'alfa')
+  expect(tarjeta('Sismo Alfa')).toHaveAttribute('aria-current', 'true')
+})
+
+test('si el sismo seleccionado ya no está en la lista, no queda nada seleccionado', async () => {
+  api((url) => ({
+    body: listBody(url.searchParams.get('sort') === 'magnitude' ? [beta] : [alfa, beta]),
+  }))
+  render(<App />)
+  await screen.findByText('Sismo Alfa')
+  fireEvent.click(tarjeta('Sismo Alfa'))
+  fireEvent.change(screen.getByLabelText('Ordenar por'), { target: { value: 'magnitude' } })
+  await screen.findByText('Sismo Beta')
+  expect(screen.getByTestId('mapa')).toHaveAttribute('data-selected', '')
 })

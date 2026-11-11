@@ -7,9 +7,11 @@ interface Props {
   state: AsyncState<EarthquakesResponse>
   onRetry: () => void
   now: Date
+  selectedId: string | null
+  onSelect: (id: string) => void
 }
 
-export default function EarthquakeList({ state, onRetry, now }: Props) {
+export default function EarthquakeList({ state, onRetry, now, selectedId, onSelect }: Props) {
   if (state.status === 'loading') return <LoadingMessage>Cargando sismos…</LoadingMessage>
   if (state.status === 'error') {
     return <ErrorMessage onRetry={onRetry}>No se pudieron cargar los sismos.</ErrorMessage>
@@ -23,7 +25,13 @@ export default function EarthquakeList({ state, onRetry, now }: Props) {
       ) : (
         <ul className="flex flex-col gap-2">
           {earthquakes.map((earthquake) => (
-            <EarthquakeCard key={earthquake.usgs_id} earthquake={earthquake} now={now} />
+            <EarthquakeCard
+              key={earthquake.usgs_id}
+              earthquake={earthquake}
+              now={now}
+              selected={earthquake.usgs_id === selectedId}
+              onSelect={onSelect}
+            />
           ))}
         </ul>
       )}

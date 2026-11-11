@@ -10,7 +10,7 @@ interface Props {
 
 export default function Controls({ window, sort, onWindowChange, onSortChange }: Props) {
   return (
-    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between lg:flex-col lg:items-stretch">
       <div className="flex gap-1 rounded-md bg-surface p-1">
         {WINDOW_OPTIONS.map((option) => (
           <button

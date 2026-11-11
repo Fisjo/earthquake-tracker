@@ -3,22 +3,29 @@ import type { Page } from '@playwright/test'
 // La API se simula en el navegador: estas pruebas no tocan USGS ni la base de datos.
 const hace = (minutos: number) => new Date(Date.now() - minutos * 60_000).toISOString()
 
-const sismo = (id: string, place: string, magnitude: number, minutos: number) => ({
+const sismo = (
+  id: string,
+  place: string,
+  magnitude: number,
+  minutos: number,
+  latitude: number,
+  longitude: number,
+) => ({
   usgs_id: id,
   title: place,
   place,
   magnitude,
   depth: 10,
-  latitude: 0,
-  longitude: 0,
+  latitude,
+  longitude,
   occurred_at: hace(minutos),
   alert_level: null,
   tsunami: false,
   significance: 100,
 })
 
-export const alfa = sismo('alfa', 'Sismo Alfa', 3.1, 5)
-export const beta = sismo('beta', 'Sismo Beta', 6.0, 30)
+export const alfa = sismo('alfa', 'Sismo Alfa', 3.1, 5, -33.4, -70.6)
+export const beta = sismo('beta', 'Sismo Beta', 6.0, 30, 35.6, 139.7)
 
 export const stats = {
   total_24h: 120,

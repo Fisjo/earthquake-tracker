@@ -2,6 +2,7 @@ import { useState } from 'react'
 import type { SortKey, Window } from './api/types'
 import Controls from './components/Controls'
 import EarthquakeList from './components/EarthquakeList'
+import EarthquakeMap from './components/EarthquakeMap'
 import StatsBar from './components/StatsBar'
 import { useEarthquakes } from './hooks/useEarthquakes'
 import { useStats } from './hooks/useStats'
@@ -26,28 +27,49 @@ function Logo() {
 function App() {
   const [window, setWindow] = useState<Window>('day')
   const [sort, setSort] = useState<SortKey>('recent')
+  const [selection, setSelection] = useState<string | null>(null)
   const earthquakes = useEarthquakes(window, sort)
   const stats = useStats()
 
+  const items = earthquakes.state.status === 'success' ? earthquakes.state.data.earthquakes : []
+  // Una selección solo vale mientras ese sismo siga en la lista.
+  const selectedId = items.some((e) => e.usgs_id === selection) ? selection : null
+
+  const changeWindow = (next: Window) => {
+    setSelection(null)
+    setWindow(next)
+  }
+
   return (
     <div className="min-h-screen bg-bg text-ink">
-      <main className="mx-auto flex max-w-3xl flex-col gap-6 px-4 py-8">
-        <header className="flex items-center gap-3">
+      <main className="mx-auto grid max-w-6xl gap-6 px-4 py-8 lg:grid-cols-[minmax(0,28rem)_minmax(0,1fr)] lg:items-start">
+        <header className="flex items-center gap-3 lg:col-span-2">
           <Logo />
           <h1 className="text-3xl font-semibold tracking-tight">Earthquake Tracker</h1>
         </header>
-        <StatsBar state={stats.state} />
-        <Controls
-          window={window}
-          sort={sort}
-          onWindowChange={setWindow}
-          onSortChange={setSort}
-        />
-        <EarthquakeList
-          state={earthquakes.state}
-          onRetry={earthquakes.reload}
-          now={earthquakes.loadedAt}
-        />
+        <div className="lg:col-start-1">
+          <StatsBar state={stats.state} />
+        </div>
+        <div className="lg:col-start-1">
+          <Controls
+            window={window}
+            sort={sort}
+            onWindowChange={changeWindow}
+            onSortChange={setSort}
+          />
+        </div>
+        <div className="lg:sticky lg:top-6 lg:col-start-2 lg:row-span-3 lg:row-start-2 lg:h-[calc(100vh-8rem)]">
+          <EarthquakeMap earthquakes={items} selectedId={selectedId} onSelect={setSelection} />
+        </div>
+        <div className="lg:col-start-1">
+          <EarthquakeList
+            state={earthquakes.state}
+            onRetry={earthquakes.reload}
+            now={earthquakes.loadedAt}
+            selectedId={selectedId}
+            onSelect={setSelection}
+          />
+        </div>
       </main>
     </div>
   )

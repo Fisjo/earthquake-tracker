@@ -96,16 +96,18 @@ El agente trabaja una fase cada vez y marca las casillas al cerrarla.
 **Objetivo:** ver los sismos en un mapa mundial.
 
 **Tareas:**
-- [ ] React-Leaflet con teselas OpenStreetMap.
-- [ ] Marcadores: tamaño por magnitud y color por profundidad, con función pura y leyenda.
-- [ ] Popup del marcador y selección sincronizada con la lista.
-- [ ] Dashboard con mapa, estadísticas y lista.
+- [x] React-Leaflet con teselas OpenStreetMap.
+- [x] Marcadores: tamaño por magnitud y color por profundidad, con función pura y leyenda.
+- [x] Popup del marcador y selección sincronizada con la lista.
+- [x] Dashboard con mapa, estadísticas y lista.
 
 **Pruebas:**
 - Vitest: la función de color y tamaño por rangos y casos límite.
 - Playwright: el mapa se carga, hay marcadores y al hacer clic se selecciona el sismo.
 
 **Hecho cuando:** mapa y lista muestran los mismos sismos y se sincronizan.
+
+**Decisiones tomadas:** 4 clases de profundidad (`<30`, `30–70`, `70–300`, `≥300` km), radio `4 + 2,2·M` px, y layout en dos columnas en escritorio (mapa fijo a la derecha) y apilado en móvil. Es la última fase de la interfaz de sismos; las siguientes (5 a 8) añaden pantallas de cuenta, favoritos e informes.
 
 ## Fase 5 · Cuentas de usuario
 

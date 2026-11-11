@@ -16,3 +16,12 @@ export function formatRelativeTime(iso: string, now: Date): string {
   if (hours < 24) return `hace ${hours} h`
   return `hace ${Math.floor(hours / 24)} d`
 }
+
+export function formatDateTime(iso: string): string {
+  const text = new Date(iso).toLocaleString('es-ES', {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+    timeZone: 'UTC',
+  })
+  return `${text} UTC`
+}
