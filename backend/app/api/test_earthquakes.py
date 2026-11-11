@@ -1,10 +1,8 @@
 from datetime import timedelta
 
 import pytest
-from fastapi.testclient import TestClient
 
-from app.api.deps import get_cache, get_now, get_usgs_client
-from app.db import get_session
+from app.api.deps import get_cache
 from app.main import app
 from app.testing_helpers import (
     NOW,
@@ -29,17 +27,6 @@ def usgs():
             make_feature(usgs_id="profundo", mag=4.0, depth=600.0, sig=300, time=_minutos(120)),
         )
     )
-
-
-@pytest.fixture
-def client(migrated_session, usgs):
-    cache = FreshnessCache(ttl_seconds=90, clock=FakeClock())
-    app.dependency_overrides[get_session] = lambda: migrated_session
-    app.dependency_overrides[get_usgs_client] = lambda: usgs
-    app.dependency_overrides[get_cache] = lambda: cache
-    app.dependency_overrides[get_now] = lambda: NOW
-    yield TestClient(app)
-    app.dependency_overrides.clear()
 
 
 def _ids(response):

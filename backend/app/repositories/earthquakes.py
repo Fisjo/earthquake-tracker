@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session
 
@@ -53,4 +53,17 @@ def list_earthquakes(
         .order_by(*_order_by(sort))
         .limit(limit)
     )
+    return list(session.scalars(stmt))
+
+
+def count_and_max_since(session: Session, since: datetime) -> tuple[int, float | None]:
+    stmt = select(func.count(), func.max(Earthquake.magnitude)).where(
+        Earthquake.occurred_at >= since
+    )
+    total, max_magnitude = session.execute(stmt).one()
+    return total, max_magnitude
+
+
+def places_since(session: Session, since: datetime) -> list[str | None]:
+    stmt = select(Earthquake.place).where(Earthquake.occurred_at >= since)
     return list(session.scalars(stmt))

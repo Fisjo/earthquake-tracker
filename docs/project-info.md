@@ -46,6 +46,8 @@ Curiosos de la geología, estudiantes e investigadores que quieren seguir los te
   - `saved_zones` (id, user_id, name, lat, lng, radius_km)
   - `saved_earthquakes` (user_id, earthquake_id). No estaba en el esquema inicial; hace falta para los sismos favoritos.
 - **API de sismos:** `GET /api/earthquakes?window=hour|day|week&sort=recent|magnitude|depth|significance&limit=500` (por defecto `day`, `recent`, 500; máximo 2000). Responde `{earthquakes, stale, warning}`: si USGS no responde, sirve lo ya guardado con `stale: true` y un aviso. Al consultar se ingiere el feed de la ventana, salvo que se haya consultado en los últimos 90 s.
+- **API de estadísticas:** `GET /api/stats` → `{total_24h, max_magnitude, most_active_region: {name, count} | null, stale, warning}`. Refresca la ventana de 24 h con la misma caché de 90 s. La zona activa es lo que va tras la última coma del `place` (sin el prefijo «N km DIR of»); sin coma, el lugar entero.
+- **Frontend (`frontend/src/`):** `api/` (cliente y tipos), `hooks/` (`useAsync` con cancelación, `useEarthquakes`, `useStats`), `components/` (barra de estadísticas, controles, lista y tarjetas, mensajes de estado), `format.ts` (formato en español) y `labels.ts`. Sin librerías de datos: `fetch` y hooks propios.
 - **Estructura prevista:** `frontend/` y `backend/` separados. La lógica de negocio (ingesta, clasificación, caché de informes) va fuera de los endpoints y de los componentes.
 - **Cómo se arranca:**
   1. `cp .env.example .env` y rellenar los valores (`POSTGRES_*`; el puerto del host por defecto es 5433). `DATABASE_URL` tiene la forma `postgresql+psycopg://USUARIO:CLAVE@localhost:5433/BASE`; `TEST_DATABASE_URL` apunta a otra base (p. ej. `BASE_test`), que las pruebas crean solas. El backend lee `.env` de la raíz.
@@ -57,7 +59,7 @@ Curiosos de la geología, estudiantes e investigadores que quieren seguir los te
 - **Cómo se ejecutan las pruebas:**
   - Backend: `cd backend && .venv/bin/pytest` y `.venv/bin/ruff check .` (requiere Postgres levantado; usa `TEST_DATABASE_URL` y se niega a correr si es igual a `DATABASE_URL`).
   - Frontend: `cd frontend && npm test` y `npm run lint`
-  - E2E: `cd e2e && npm install && npx playwright install chromium` la primera vez; después `npm test` (arranca backend y frontend solos).
+  - E2E (la API se simula en el navegador, sin USGS ni base de datos): `cd e2e && npm install && npx playwright install chromium` la primera vez; después `npm test` (arranca backend y frontend solos).
 
 ## Datos y claves
 

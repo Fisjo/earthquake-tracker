@@ -61,11 +61,11 @@ El agente trabaja una fase cada vez y marca las casillas al cerrarla.
 **Objetivo:** ver la lista de sismos con filtros, orden y estadísticas.
 
 **Tareas:**
-- [ ] `GET /api/stats`: total en 24 h, magnitud máxima y zona más activa (definición abajo).
-- [ ] Cliente de API en el frontend.
-- [ ] Selector de ventana temporal y de orden.
-- [ ] Lista/tarjetas de sismos y barra de estadísticas.
-- [ ] Estados de carga y error.
+- [x] `GET /api/stats`: total en 24 h, magnitud máxima y zona más activa (definición abajo).
+- [x] Cliente de API en el frontend.
+- [x] Selector de ventana temporal y de orden.
+- [x] Lista/tarjetas de sismos y barra de estadísticas.
+- [x] Estados de carga y error.
 
 **Pruebas:**
 - pytest: cálculo de estadísticas con datos fijos.
@@ -173,6 +173,6 @@ El agente trabaja una fase cada vez y marca las casillas al cerrarla.
 
 ## Decisiones pendientes
 
-- **Zona más activa:** propongo agrupar por región del campo `place` de USGS (el texto tras «of», p. ej. «Alaska») y elegir la que más sismos tenga en 24 h.
+- ~~Zona más activa~~ (resuelto en la Fase 3): región = lo que va tras la última coma del `place` de USGS, sin el prefijo «N km DIR of» («Chile», «Papua New Guinea»); sin coma, el lugar tal cual («Mid-Indian Ridge»). Gana la de más sismos en 24 h; en empate, la primera alfabéticamente. Pendiente de mejora: USGS abrevia los estados de EE. UU. («CA»).
 - **Quién puede generar informes:** propongo exigir sesión, para proteger la cuota de Gemini. Ver los sismos y el mapa sería público.
 - **Caducidad del Análisis de Zona:** propongo 24 h. El Informe de Evento no caduca.
