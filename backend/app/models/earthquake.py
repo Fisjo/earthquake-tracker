@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import DateTime, Float, String
+from sqlalchemy import DateTime, Float, Integer, String
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -21,4 +21,5 @@ class Earthquake(Base):
     occurred_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     alert_level: Mapped[str | None] = mapped_column(String(16))
     tsunami: Mapped[bool] = mapped_column(default=False)
+    significance: Mapped[int | None] = mapped_column(Integer, index=True)
     raw_data: Mapped[dict] = mapped_column(JSONB)

@@ -42,11 +42,11 @@ El agente trabaja una fase cada vez y marca las casillas al cerrarla.
 **Objetivo:** el backend obtiene los sismos de USGS, los guarda y los sirve filtrados y ordenados.
 
 **Tareas:**
-- [ ] Cliente de los feeds GeoJSON (hora, día, semana) con caché corta de ~1-2 min.
-- [ ] Parser del GeoJSON a nuestro modelo, separado del cliente HTTP.
-- [ ] Upsert por `usgs_id` al consultar.
-- [ ] `GET /api/earthquakes?window=hour|day|week&sort=recent|magnitude|depth|significance`.
-- [ ] Manejo de errores cuando USGS no responde: se sirve lo ya guardado y se avisa.
+- [x] Cliente de los feeds GeoJSON (hora, día, semana) con caché corta de ~1-2 min.
+- [x] Parser del GeoJSON a nuestro modelo, separado del cliente HTTP.
+- [x] Upsert por `usgs_id` al consultar.
+- [x] `GET /api/earthquakes?window=hour|day|week&sort=recent|magnitude|depth|significance&limit=500` (columna `significance` con migración nueva).
+- [x] Manejo de errores cuando USGS no responde: se sirve lo ya guardado y se avisa.
 
 **Pruebas:**
 - Parser con un GeoJSON de ejemplo: campos, magnitud nula, profundidad.

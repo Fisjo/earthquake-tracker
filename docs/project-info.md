@@ -41,10 +41,11 @@ Curiosos de la geología, estudiantes e investigadores que quieren seguir los te
 - **Autenticación:** contraseñas con hash (argon2 o bcrypt) y sesión por JWT en cookie httpOnly.
 - **Tablas principales:**
   - `users` (id, email, password_hash, created_at)
-  - `earthquakes` (usgs_id, title, place, magnitude, depth, latitude, longitude, occurred_at, alert_level, tsunami, raw_data)
+  - `earthquakes` (usgs_id, title, place, magnitude, depth, latitude, longitude, occurred_at, alert_level, significance, tsunami, raw_data). `significance` es el `sig` de USGS, en columna propia para ordenar por él.
   - `ai_reports` (id, earthquake_id o region_name, report_type, content, created_at). Es caché compartida entre usuarios.
   - `saved_zones` (id, user_id, name, lat, lng, radius_km)
   - `saved_earthquakes` (user_id, earthquake_id). No estaba en el esquema inicial; hace falta para los sismos favoritos.
+- **API de sismos:** `GET /api/earthquakes?window=hour|day|week&sort=recent|magnitude|depth|significance&limit=500` (por defecto `day`, `recent`, 500; máximo 2000). Responde `{earthquakes, stale, warning}`: si USGS no responde, sirve lo ya guardado con `stale: true` y un aviso. Al consultar se ingiere el feed de la ventana, salvo que se haya consultado en los últimos 90 s.
 - **Estructura prevista:** `frontend/` y `backend/` separados. La lógica de negocio (ingesta, clasificación, caché de informes) va fuera de los endpoints y de los componentes.
 - **Cómo se arranca:**
   1. `cp .env.example .env` y rellenar los valores (`POSTGRES_*`; el puerto del host por defecto es 5433). `DATABASE_URL` tiene la forma `postgresql+psycopg://USUARIO:CLAVE@localhost:5433/BASE`; `TEST_DATABASE_URL` apunta a otra base (p. ej. `BASE_test`), que las pruebas crean solas. El backend lee `.env` de la raíz.
@@ -60,7 +61,7 @@ Curiosos de la geología, estudiantes e investigadores que quieren seguir los te
 
 ## Datos y claves
 
-- **Fuente externa:** USGS Earthquake Hazards Program, feeds GeoJSON (`earthquake.usgs.gov/earthquakes/feed/v1.0/geojson.php`). Sin clave, de solo lectura.
+- **Fuente externa:** USGS Earthquake Hazards Program, feeds GeoJSON (`earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_{hour,day,week}.geojson`). Sin clave, de solo lectura.
 - **Claves en `.env`** (nunca en git; `.env.example` sin valores):
   - `DATABASE_URL`
   - `GEMINI_API_KEY`

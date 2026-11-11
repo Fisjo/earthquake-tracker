@@ -24,6 +24,7 @@ def test_migracion_se_aplica_y_se_revierte(empty_db, test_db_url):
         "alert_level",
         "tsunami",
         "raw_data",
+        "significance",
     } <= columnas
     indices_unicos = [
         i["column_names"] for i in inspector.get_indexes("earthquakes") if i["unique"]
@@ -32,3 +33,13 @@ def test_migracion_se_aplica_y_se_revierte(empty_db, test_db_url):
 
     command.downgrade(config, "base")
     assert "earthquakes" not in inspect(empty_db).get_table_names()
+
+
+def test_significance_se_puede_quitar_sin_perder_la_tabla(empty_db, test_db_url):
+    config = alembic_config(test_db_url)
+    command.upgrade(config, "head")
+    command.downgrade(config, "-1")
+    inspector = inspect(empty_db)
+    columnas = {c["name"] for c in inspector.get_columns("earthquakes")}
+    assert "significance" not in columnas
+    assert "usgs_id" in columnas
