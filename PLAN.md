@@ -27,9 +27,9 @@ El agente trabaja una fase cada vez y marca las casillas al cerrarla.
 **Objetivo:** guardar sismos en PostgreSQL con migraciones.
 
 **Tareas:**
-- [ ] SQLAlchemy + Alembic conectados a `DATABASE_URL`.
-- [ ] Modelo y migración de `earthquakes` (índice único en `usgs_id`).
-- [ ] Base de datos de pruebas separada de la de desarrollo.
+- [x] SQLAlchemy + Alembic conectados a `DATABASE_URL`.
+- [x] Modelo y migración de `earthquakes` (índice único en `usgs_id`).
+- [x] Base de datos de pruebas separada de la de desarrollo.
 
 **Pruebas:**
 - La migración se aplica y se revierte sobre una base vacía.

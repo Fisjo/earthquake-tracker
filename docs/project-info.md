@@ -47,14 +47,14 @@ Curiosos de la geología, estudiantes e investigadores que quieren seguir los te
   - `saved_earthquakes` (user_id, earthquake_id). No estaba en el esquema inicial; hace falta para los sismos favoritos.
 - **Estructura prevista:** `frontend/` y `backend/` separados. La lógica de negocio (ingesta, clasificación, caché de informes) va fuera de los endpoints y de los componentes.
 - **Cómo se arranca:**
-  1. `cp .env.example .env` y rellenar los valores (`POSTGRES_*`; el puerto del host por defecto es 5433).
+  1. `cp .env.example .env` y rellenar los valores (`POSTGRES_*`; el puerto del host por defecto es 5433). `DATABASE_URL` tiene la forma `postgresql+psycopg://USUARIO:CLAVE@localhost:5433/BASE`; `TEST_DATABASE_URL` apunta a otra base (p. ej. `BASE_test`), que las pruebas crean solas. El backend lee `.env` de la raíz.
   2. `docker compose up -d` (PostgreSQL 16).
   3. Backend, la primera vez: `cd backend && python3.14 -m venv .venv && .venv/bin/pip install -r requirements.txt`.
   4. Backend: `cd backend && .venv/bin/uvicorn app.main:app --reload --port 8000`.
   5. Frontend, la primera vez: `cd frontend && npm install`. Después: `npm run dev` (http://localhost:5173, con proxy de `/api` al backend).
-  6. Migraciones (`alembic upgrade head`): a partir de la Fase 1.
+  6. Migraciones: `cd backend && .venv/bin/alembic upgrade head`. Nueva migración: `.venv/bin/alembic revision --autogenerate -m "mensaje"` y revisarla a mano.
 - **Cómo se ejecutan las pruebas:**
-  - Backend: `cd backend && .venv/bin/pytest` y `.venv/bin/ruff check .`
+  - Backend: `cd backend && .venv/bin/pytest` y `.venv/bin/ruff check .` (requiere Postgres levantado; usa `TEST_DATABASE_URL` y se niega a correr si es igual a `DATABASE_URL`).
   - Frontend: `cd frontend && npm test` y `npm run lint`
   - E2E: `cd e2e && npm install && npx playwright install chromium` la primera vez; después `npm test` (arranca backend y frontend solos).
 
