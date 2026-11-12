@@ -87,3 +87,15 @@ def test_sismos_sin_lugar_cuentan_en_el_total_pero_no_en_zonas(migrated_session)
     stats = compute_stats(migrated_session, NOW)
     assert stats.total_24h == 2
     assert stats.most_active_region is None
+
+
+def test_sigla_y_nombre_completo_suman_en_la_misma_zona(migrated_session):
+    _cargar(
+        migrated_session,
+        _fila("a", 1, "7 km WNW of Cobb, CA"),
+        _fila("b", 2, "3 km S of Ukiah, California"),
+        _fila("c", 3, "9 km N of Lima, Peru"),
+    )
+    region = compute_stats(migrated_session, NOW).most_active_region
+    assert region.name == "California"
+    assert region.count == 2

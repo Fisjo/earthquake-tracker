@@ -17,10 +17,13 @@ test('el mapa se carga con un marcador por cada sismo de la lista', async ({ pag
   await expect(page.getByText('OpenStreetMap')).toBeVisible()
 })
 
+const leyenda = (page: import('@playwright/test').Page) =>
+  page.getByRole('region', { name: 'Mapa de sismos' })
+
 test('la leyenda explica el color y el tamaño', async ({ page }) => {
-  await expect(page.getByText('Profundidad', { exact: true })).toBeVisible()
-  await expect(page.getByText('Magnitud', { exact: true })).toBeVisible()
-  await expect(page.getByText('< 30 km')).toBeVisible()
+  await expect(leyenda(page).getByText('Profundidad', { exact: true })).toBeVisible()
+  await expect(leyenda(page).getByText('Magnitud', { exact: true })).toBeVisible()
+  await expect(leyenda(page).getByText('< 30 km')).toBeVisible()
 })
 
 test('pulsar un marcador selecciona el sismo y abre su popup', async ({ page }) => {
@@ -82,7 +85,7 @@ test('en escritorio ningún control queda tapado por el mapa', async ({ page }) 
 
 test('la leyenda se ve entera en el primer pantallazo de escritorio', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 })
-  const leyenda = (await page.getByText('Magnitud', { exact: true }).locator('..').boundingBox())!
+  const leyenda = (await page.getByRole('region', { name: 'Mapa de sismos' }).getByText('Magnitud', { exact: true }).locator('..').boundingBox())!
   expect(leyenda.y + leyenda.height).toBeLessThanOrEqual(900)
 })
 
@@ -98,6 +101,6 @@ test('el popup es compacto: sin los márgenes de párrafo de Leaflet', async ({ 
 test('en móvil la leyenda va debajo del mapa y no lo tapa', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 })
   const mapa = (await page.locator('.leaflet-container').boundingBox())!
-  const leyenda = (await page.getByText('Profundidad', { exact: true }).locator('..').boundingBox())!
+  const leyenda = (await page.getByRole('region', { name: 'Mapa de sismos' }).getByText('Profundidad', { exact: true }).locator('..').boundingBox())!
   expect(leyenda.y).toBeGreaterThanOrEqual(mapa.y + mapa.height - 1)
 })

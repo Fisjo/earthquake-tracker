@@ -7,9 +7,12 @@ interface Props {
   now: Date
   selected: boolean
   onSelect: (id: string) => void
+  /** Resaltada porque el ratón está sobre su marcador en el mapa. */
+  highlighted: boolean
+  onHover: (id: string | null) => void
 }
 
-export default function EarthquakeCard({ earthquake, now, selected, onSelect }: Props) {
+export default function EarthquakeCard({ earthquake, now, selected, onSelect, highlighted, onHover }: Props) {
   const button = useRef<HTMLButtonElement>(null)
 
   useEffect(() => {
@@ -22,8 +25,13 @@ export default function EarthquakeCard({ earthquake, now, selected, onSelect }: 
         ref={button}
         type="button"
         aria-current={selected ? 'true' : undefined}
+        data-highlighted={highlighted ? 'true' : undefined}
         onClick={() => onSelect(earthquake.usgs_id)}
-        className="flex min-h-11 w-full items-center gap-4 rounded-md border border-line bg-card p-4 text-left transition-[transform,border-color,box-shadow] hover:-translate-y-0.5 hover:border-accent active:translate-y-0 aria-[current=true]:border-accent aria-[current=true]:ring-2 aria-[current=true]:ring-accent"
+        onMouseEnter={() => onHover(earthquake.usgs_id)}
+        onMouseLeave={() => onHover(null)}
+        onFocus={() => onHover(earthquake.usgs_id)}
+        onBlur={() => onHover(null)}
+        className="flex min-h-11 w-full items-center gap-4 rounded-md border border-line bg-card p-4 text-left transition-[transform,border-color,box-shadow] hover:-translate-y-0.5 hover:border-accent data-[highlighted=true]:border-accent active:translate-y-0 aria-[current=true]:border-accent aria-[current=true]:ring-2 aria-[current=true]:ring-accent"
       >
         <span
           data-figure

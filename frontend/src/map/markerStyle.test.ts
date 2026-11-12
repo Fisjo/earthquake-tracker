@@ -1,5 +1,11 @@
 import { describe, expect, test } from 'vitest'
-import { DEPTH_CLASSES, NO_DATA_COLOR, depthColor, magnitudeRadius } from './markerStyle'
+import {
+  DEPTH_CLASSES,
+  NO_DATA_COLOR,
+  depthClassIndex,
+  depthColor,
+  magnitudeRadius,
+} from './markerStyle'
 
 describe('depthColor', () => {
   const [superficial, somera, intermedia, profunda] = DEPTH_CLASSES.map((c) => c.color)
@@ -61,5 +67,31 @@ describe('magnitudeRadius', () => {
 
   test('sin magnitud usa el radio mínimo', () => {
     expect(magnitudeRadius(null)).toBe(4)
+  })
+})
+
+describe('depthClassIndex', () => {
+  test.each([
+    [-2, 0],
+    [0, 0],
+    [29.9, 0],
+    [30, 1],
+    [69.9, 1],
+    [70, 2],
+    [299.9, 2],
+    [300, 3],
+    [650, 3],
+  ])('profundidad %s km es la clase %s', (depth, index) => {
+    expect(depthClassIndex(depth)).toBe(index)
+  })
+
+  test('sin profundidad no pertenece a ninguna clase', () => {
+    expect(depthClassIndex(null)).toBeNull()
+  })
+
+  test('es coherente con el color que se dibuja', () => {
+    for (const depth of [0, 12, 30, 55, 70, 150, 300, 500]) {
+      expect(DEPTH_CLASSES[depthClassIndex(depth)!].color).toBe(depthColor(depth))
+    }
   })
 })

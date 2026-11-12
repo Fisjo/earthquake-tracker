@@ -10,20 +10,20 @@ test('pinta una tarjeta por sismo', () => {
     earthquake({ usgs_id: 'a', place: 'Lugar A' }),
     earthquake({ usgs_id: 'b', place: 'Lugar B' }),
   ])
-  render(<EarthquakeList state={{ status: 'success', data }} onRetry={vi.fn()} now={now} selectedId={null} onSelect={vi.fn()} />)
+  render(<EarthquakeList state={{ status: 'success', data }} onRetry={vi.fn()} now={now} selectedId={null} onSelect={vi.fn()} hoveredId={null} onHover={vi.fn()} />)
   expect(screen.getAllByRole('listitem')).toHaveLength(2)
   expect(screen.getByText('Lugar A')).toBeInTheDocument()
   expect(screen.getByText('Lugar B')).toBeInTheDocument()
 })
 
 test('estado de carga', () => {
-  render(<EarthquakeList state={{ status: 'loading' }} onRetry={vi.fn()} now={now} selectedId={null} onSelect={vi.fn()} />)
+  render(<EarthquakeList state={{ status: 'loading' }} onRetry={vi.fn()} now={now} selectedId={null} onSelect={vi.fn()} hoveredId={null} onHover={vi.fn()} />)
   expect(screen.getByRole('status')).toHaveTextContent('Cargando sismos…')
 })
 
 test('estado de error con reintento', () => {
   const onRetry = vi.fn()
-  render(<EarthquakeList state={{ status: 'error' }} onRetry={onRetry} now={now} selectedId={null} onSelect={vi.fn()} />)
+  render(<EarthquakeList state={{ status: 'error' }} onRetry={onRetry} now={now} selectedId={null} onSelect={vi.fn()} hoveredId={null} onHover={vi.fn()} />)
   expect(screen.getByRole('alert')).toHaveTextContent('No se pudieron cargar los sismos')
   fireEvent.click(screen.getByRole('button', { name: 'Reintentar' }))
   expect(onRetry).toHaveBeenCalledOnce()
@@ -31,7 +31,7 @@ test('estado de error con reintento', () => {
 
 test('lista vacía', () => {
   render(
-    <EarthquakeList state={{ status: 'success', data: listBody([]) }} onRetry={vi.fn()} now={now} selectedId={null} onSelect={vi.fn()} />,
+    <EarthquakeList state={{ status: 'success', data: listBody([]) }} onRetry={vi.fn()} now={now} selectedId={null} onSelect={vi.fn()} hoveredId={null} onHover={vi.fn()} />,
   )
   expect(screen.getByText('No hay sismos en este periodo.')).toBeInTheDocument()
   expect(screen.queryByRole('list')).not.toBeInTheDocument()
@@ -39,14 +39,14 @@ test('lista vacía', () => {
 
 test('aviso cuando los datos pueden estar desactualizados', () => {
   const data = listBody([earthquake()], { stale: true, warning: 'USGS no responde' })
-  render(<EarthquakeList state={{ status: 'success', data }} onRetry={vi.fn()} now={now} selectedId={null} onSelect={vi.fn()} />)
+  render(<EarthquakeList state={{ status: 'success', data }} onRetry={vi.fn()} now={now} selectedId={null} onSelect={vi.fn()} hoveredId={null} onHover={vi.fn()} />)
   expect(screen.getByRole('alert')).toHaveTextContent('USGS no responde')
   expect(screen.getAllByRole('listitem')).toHaveLength(1)
 })
 
 test('sin aviso cuando los datos están al día', () => {
   const data = listBody([earthquake()])
-  render(<EarthquakeList state={{ status: 'success', data }} onRetry={vi.fn()} now={now} selectedId={null} onSelect={vi.fn()} />)
+  render(<EarthquakeList state={{ status: 'success', data }} onRetry={vi.fn()} now={now} selectedId={null} onSelect={vi.fn()} hoveredId={null} onHover={vi.fn()} />)
   expect(screen.queryByRole('alert')).not.toBeInTheDocument()
 })
 
@@ -57,11 +57,45 @@ test('resalta solo el sismo seleccionado y avisa al pulsar una tarjeta', () => {
     earthquake({ usgs_id: 'b', place: 'Lugar B' }),
   ])
   render(
-    <EarthquakeList state={{ status: 'success', data }} onRetry={vi.fn()} now={now} selectedId="b" onSelect={onSelect} />,
+    <EarthquakeList state={{ status: 'success', data }} onRetry={vi.fn()} now={now} selectedId="b" onSelect={onSelect} hoveredId={null} onHover={vi.fn()} />,
   )
   const tarjetas = screen.getAllByRole('button')
   expect(tarjetas[0]).not.toHaveAttribute('aria-current')
   expect(tarjetas[1]).toHaveAttribute('aria-current', 'true')
   fireEvent.click(tarjetas[0])
   expect(onSelect).toHaveBeenCalledWith('a')
+})
+
+test('resalta la tarjeta del sismo sobre el que está el ratón en el mapa', () => {
+  const data = listBody([
+    earthquake({ usgs_id: 'a', place: 'Lugar A' }),
+    earthquake({ usgs_id: 'b', place: 'Lugar B' }),
+  ])
+  render(
+    <EarthquakeList state={{ status: 'success', data }} onRetry={vi.fn()} now={now} selectedId={null} onSelect={vi.fn()} hoveredId="b" onHover={vi.fn()} />,
+  )
+  const tarjetas = screen.getAllByRole('button')
+  expect(tarjetas[0]).not.toHaveAttribute('data-highlighted')
+  expect(tarjetas[1]).toHaveAttribute('data-highlighted', 'true')
+})
+
+test('si los filtros dejan la lista vacía lo dice y permite quitarlos', () => {
+  const onClearFilters = vi.fn()
+  render(
+    <EarthquakeList
+      state={{ status: 'success', data: listBody([]) }}
+      onRetry={vi.fn()}
+      now={now}
+      selectedId={null}
+      onSelect={vi.fn()}
+      hoveredId={null}
+      onHover={vi.fn()}
+      emptyDueToFilters
+      onClearFilters={onClearFilters}
+    />,
+  )
+  expect(screen.getByText('Ningún sismo coincide con los filtros.')).toBeInTheDocument()
+  expect(screen.queryByText('No hay sismos en este periodo.')).not.toBeInTheDocument()
+  fireEvent.click(screen.getByRole('button', { name: 'Quitar filtros' }))
+  expect(onClearFilters).toHaveBeenCalledOnce()
 })

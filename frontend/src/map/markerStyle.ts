@@ -19,10 +19,18 @@ const MIN_RADIUS = 4
 const RADIUS_PER_MAGNITUDE = 2.2
 const MAX_MAGNITUDE = 9
 
+/** Índice de la clase de profundidad en `DEPTH_CLASSES`; null si no hay profundidad. */
+export function depthClassIndex(depth: number | null): number | null {
+  if (depth === null) return null
+  for (let i = DEPTH_CLASSES.length - 1; i >= 0; i--) {
+    if (depth >= DEPTH_CLASSES[i].min) return i
+  }
+  return null
+}
+
 export function depthColor(depth: number | null): string {
-  if (depth === null) return NO_DATA_COLOR
-  const match = [...DEPTH_CLASSES].reverse().find((c) => depth >= c.min)
-  return match ? match.color : NO_DATA_COLOR
+  const index = depthClassIndex(depth)
+  return index === null ? NO_DATA_COLOR : DEPTH_CLASSES[index].color
 }
 
 /** Radio del marcador en píxeles: 4 px en M 0 y ~24 px en M 9. */

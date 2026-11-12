@@ -11,10 +11,24 @@ vi.mock('./components/EarthquakeMap', () => ({
     earthquakes: Earthquake[]
     selectedId: string | null
     onSelect: (id: string | null) => void
+    hoveredId: string | null
+    onHover: (id: string | null) => void
+    fitKey: string
   }) => (
-    <div data-testid="mapa" data-selected={props.selectedId ?? ''}>
+    <div
+      data-testid="mapa"
+      data-selected={props.selectedId ?? ''}
+      data-hovered={props.hoveredId ?? ''}
+      data-fitkey={props.fitKey}
+    >
       {props.earthquakes.map((e) => (
-        <button key={e.usgs_id} type="button" onClick={() => props.onSelect(e.usgs_id)}>
+        <button
+          key={e.usgs_id}
+          type="button"
+          onClick={() => props.onSelect(e.usgs_id)}
+          onMouseEnter={() => props.onHover(e.usgs_id)}
+          onMouseLeave={() => props.onHover(null)}
+        >
           {`marcador ${e.usgs_id}`}
         </button>
       ))}
@@ -174,4 +188,104 @@ test('si el sismo seleccionado ya no está en la lista, no queda nada selecciona
   fireEvent.change(screen.getByLabelText('Ordenar por'), { target: { value: 'magnitude' } })
   await screen.findByText('Sismo Beta')
   expect(screen.getByTestId('mapa')).toHaveAttribute('data-selected', '')
+})
+
+const fijarMagnitudMinima = (valor: string) =>
+  fireEvent.change(screen.getByLabelText('Magnitud mínima'), { target: { value: valor } })
+
+test('los filtros reducen la lista y lo que recibe el mapa', async () => {
+  api(() => ({ body: listBody([alfa, beta]) }))
+  render(<App />)
+  await screen.findByText('Sismo Alfa')
+  expect(screen.getByRole('status')).toHaveTextContent('Mostrando 2 de 2 sismos')
+  fijarMagnitudMinima('5')
+  expect(lugares()).toEqual(['Sismo Beta'])
+  expect(marcadores().map((m) => m.textContent)).toEqual(['marcador beta'])
+  expect(screen.getByRole('status')).toHaveTextContent('Mostrando 1 de 2 sismos')
+})
+
+test('buscar un lugar filtra lista y mapa', async () => {
+  api(() => ({ body: listBody([alfa, beta]) }))
+  render(<App />)
+  await screen.findByText('Sismo Alfa')
+  fireEvent.change(screen.getByLabelText('Buscar lugar'), { target: { value: 'alfa' } })
+  expect(lugares()).toEqual(['Sismo Alfa'])
+  expect(marcadores()).toHaveLength(1)
+})
+
+test('si ningún sismo coincide lo dice y Quitar filtros los restablece', async () => {
+  api(() => ({ body: listBody([alfa, beta]) }))
+  render(<App />)
+  await screen.findByText('Sismo Alfa')
+  fijarMagnitudMinima('8')
+  expect(screen.getByText('Ningún sismo coincide con los filtros.')).toBeInTheDocument()
+  expect(screen.queryByText('No hay sismos en este periodo.')).not.toBeInTheDocument()
+  fireEvent.click(screen.getAllByRole('button', { name: 'Quitar filtros' })[0])
+  expect(await screen.findByText('Sismo Alfa')).toBeInTheDocument()
+  expect(lugares()).toEqual(['Sismo Alfa', 'Sismo Beta'])
+  expect(screen.getByLabelText('Magnitud mínima')).toHaveValue('0')
+})
+
+test('una lista vacía sin filtros sigue diciendo que no hay sismos', async () => {
+  api(() => ({ body: listBody([]) }))
+  render(<App />)
+  expect(await screen.findByText('No hay sismos en este periodo.')).toBeInTheDocument()
+  expect(screen.queryByText('Ningún sismo coincide con los filtros.')).not.toBeInTheDocument()
+})
+
+test('si el filtro deja fuera al sismo seleccionado, no queda nada seleccionado', async () => {
+  api(() => ({ body: listBody([alfa, beta]) }))
+  render(<App />)
+  await screen.findByText('Sismo Alfa')
+  fireEvent.click(tarjeta('Sismo Alfa'))
+  expect(screen.getByTestId('mapa')).toHaveAttribute('data-selected', 'alfa')
+  fijarMagnitudMinima('5')
+  expect(screen.getByTestId('mapa')).toHaveAttribute('data-selected', '')
+})
+
+test('las estadísticas avisan de que no dependen de los filtros', async () => {
+  api(() => ({ body: listBody([alfa]) }))
+  render(<App />)
+  await screen.findByText('Sismo Alfa')
+  expect(
+    screen.getByText('Las estadísticas son globales de las últimas 24 h y no dependen de los filtros.'),
+  ).toBeInTheDocument()
+})
+
+test('pasar el ratón por una tarjeta la resalta en el mapa y al salir se quita', async () => {
+  api(() => ({ body: listBody([alfa, beta]) }))
+  render(<App />)
+  await screen.findByText('Sismo Alfa')
+  fireEvent.mouseEnter(tarjeta('Sismo Alfa'))
+  expect(screen.getByTestId('mapa')).toHaveAttribute('data-hovered', 'alfa')
+  fireEvent.mouseLeave(tarjeta('Sismo Alfa'))
+  expect(screen.getByTestId('mapa')).toHaveAttribute('data-hovered', '')
+})
+
+test('pasar el ratón por un marcador resalta su tarjeta', async () => {
+  api(() => ({ body: listBody([alfa, beta]) }))
+  render(<App />)
+  await screen.findByText('Sismo Alfa')
+  fireEvent.mouseEnter(screen.getByRole('button', { name: 'marcador beta' }))
+  expect(tarjeta('Sismo Beta')).toHaveAttribute('data-highlighted', 'true')
+  expect(tarjeta('Sismo Alfa')).not.toHaveAttribute('data-highlighted')
+  fireEvent.mouseLeave(screen.getByRole('button', { name: 'marcador beta' }))
+  expect(tarjeta('Sismo Beta')).not.toHaveAttribute('data-highlighted')
+})
+
+test('el mapa se reencuadra al cambiar filtros o ventana, pero no al ordenar', async () => {
+  api(() => ({ body: listBody([alfa, beta]) }))
+  render(<App />)
+  await screen.findByText('Sismo Alfa')
+  const clave = () => screen.getByTestId('mapa').getAttribute('data-fitkey')
+  const inicial = clave()
+  fireEvent.change(screen.getByLabelText('Ordenar por'), { target: { value: 'magnitude' } })
+  await screen.findByText('Sismo Alfa')
+  expect(clave()).toBe(inicial)
+  fijarMagnitudMinima('3')
+  expect(clave()).not.toBe(inicial)
+  const conFiltro = clave()
+  fireEvent.click(screen.getByRole('button', { name: 'Última hora' }))
+  await screen.findByText('Sismo Alfa')
+  expect(clave()).not.toBe(conFiltro)
 })
